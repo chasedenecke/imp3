@@ -42,10 +42,21 @@ train_dataset = datasets.CIFAR10('./data',
                                download=True,
                                transform=transforms.ToTensor())
 
-print("Getting validation sample")
-
+print("Generating validation sample")
 validation_sampler, train_sampler = DataSplit(0.8, train_dataset)
 
+print("Generating 5 testing samples.")
+training_data = []
+# Frequency of the split to produce 4 even sets.
+split =[0.75, 0.66667, 0.5]
+print(len(train_sampler))
+for i in range(0, 3):
+    subset, train_sampler = DataSplit(split[i], train_sampler)
+    training_data.append(subset)
+training_data.append(train_sampler)
+
+for i, elem in enumerate(training_data):
+    print("traning set ",i + 1 ," size: ", len(elem))
 
 # subset_loader = torch.utils.data.Subset(train_dataset, batch_size=32, shuffle=True, sampler=SubsetRandomSampler())
 # print("length of subset loader = ", len(subset_loader))
