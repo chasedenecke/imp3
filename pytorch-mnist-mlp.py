@@ -10,46 +10,56 @@ sns.set()
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Function returns two subsets of a data set.
+# @param split A % to split the data on.
+# @param dataset A dataset.
+def DataSplit(split, dataset):
+    dataset_size = len(dataset)
+    indices = list(range(dataset_size))
+    #subsetSplit is the location of the split.
+    subsetSplit = int(np.floor(split * dataset_size))
+    # Genereate indices for the two subsets.
+    subset1_indices, subset2_indices = indices[subsetSplit:], indices[:subsetSplit]
+    # Fill the subsets.
+    subset2_sampler = torch.utils.data.Subset(dataset, subset2_indices)
+    subset1_sampler = torch.utils.data.Subset(dataset, subset1_indices)
+
+    return subset1_sampler, subset2_sampler
+
+
 if torch.cuda.is_available():
     device = torch.device('cuda')
 else:
     device = torch.device('cpu')
-    
+
 print('Using PyTorch version:', torch.__version__, ' Device:', device)
 
 batch_size = 32
 
-train_dataset = datasets.CIFAR10('./data', 
-                               train=True, 
-                               download=True, 
+print("Loading data set.")
+train_dataset = datasets.CIFAR10('./data',
+                               train=True,
+                               download=True,
                                transform=transforms.ToTensor())
 
-validation_split = 0.8
-dataset_size = len(train_dataset)
-indices = list(range(dataset_size))
-split = int(np.floor(validation_split * dataset_size))
-print("split = ", split)
-validation_indices, train_indices = indices[split:], indices[:split]
-print("train indices = ", train_indices)
-print("validation indices = ", validation_indices)
-train_sampler = torch.utils.data.Subset(train_dataset, train_indices)
-validation_sampler = torch.utils.data.Subset(train_dataset, validation_indices)
-print("lenghth of train = ", len(train_sampler))
+print("Getting validation sample")
+
+validation_sampler, train_sampler = DataSplit(0.8, train_dataset)
 
 
 # subset_loader = torch.utils.data.Subset(train_dataset, batch_size=32, shuffle=True, sampler=SubsetRandomSampler())
 # print("length of subset loader = ", len(subset_loader))
 
-# validation_dataset = datasets.CIFAR10('./data', 
-#                                     train=False, 
+# validation_dataset = datasets.CIFAR10('./data',
+#                                     train=False,
 #                                     transform=transforms.ToTensor())
 
-# train_loader = torch.utils.data.DataLoader(dataset=train_dataset, 
-#                                            batch_size=batch_size, 
+# train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
+#                                            batch_size=batch_size,
 #                                            shuffle=True)
 
-# validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset, 
-#                                                 batch_size=batch_size, 
+# validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset,
+#                                                 batch_size=batch_size,
 #                                                 shuffle=False)
 
 
@@ -93,7 +103,7 @@ print("lenghth of train = ", len(train_sampler))
 # def train(epoch, log_interval=200):
 #     # Set model to training mode
 #     model.train()
-    
+
 #     # Loop over each batch from the training set
 #     for batch_idx, (data, target) in enumerate(train_loader):
 #         # Copy data to GPU if needed
@@ -101,8 +111,8 @@ print("lenghth of train = ", len(train_sampler))
 #         target = target.to(device)
 
 #         # Zero gradient buffers
-#         optimizer.zero_grad() 
-        
+#         optimizer.zero_grad()
+
 #         # Pass data through the network
 #         output = model(data)
 
@@ -111,10 +121,10 @@ print("lenghth of train = ", len(train_sampler))
 
 #         # Backpropagate
 #         loss.backward()
-        
+
 #         # Update weights
 #         optimizer.step()
-        
+
 #         if batch_idx % log_interval == 0:
 #             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
 #                 epoch, batch_idx * len(data), len(train_loader.dataset),
@@ -136,7 +146,7 @@ print("lenghth of train = ", len(train_sampler))
 
 #     accuracy = 100. * correct.to(torch.float32) / len(validation_loader.dataset)
 #     accuracy_vector.append(accuracy)
-    
+
 #     print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
 #         val_loss, correct, len(validation_loader.dataset), accuracy))
 
