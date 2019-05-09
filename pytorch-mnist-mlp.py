@@ -74,31 +74,31 @@ for i, loader in enumerate(train_loader):
         print("\n")
         break
 
-# pltsize=1
-# plt.figure(figsize=(10*pltsize, pltsize))
+    pltsize=1
+    plt.figure(figsize=(10*pltsize, pltsize))
 
-# for i in range(10):
-#     plt.subplot(1,10,i+1)
-#     plt.axis('off')
-#     plt.imshow(X_train[i,:,:,:].numpy().reshape(32,32,3), cmap="gray")
-#     plt.title('Class: '+str(y_train[i].item()))
+    for i in range(10):
+        plt.subplot(1,10,i+1)
+        plt.axis('off')
+        plt.imshow(X_train[i,:,:,:].numpy().reshape(32,32,3), cmap="gray")
+        plt.title('Class: '+str(y_train[i].item()))
 
-# class Net(nn.Module):
-#     def __init__(self):
-#         super(Net, self).__init__()
-#         self.fc1 = nn.Linear(32*32, 50)
-#         self.fc1_drop = nn.Dropout(0.2)
-#         self.fc2 = nn.Linear(50, 50)
-#         self.fc2_drop = nn.Dropout(0.2)
-#         self.fc3 = nn.Linear(50, 10)
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        self.fc1 = nn.Linear(32*32, 50)
+        self.fc1_drop = nn.Dropout(0.2)
+        self.fc2 = nn.Linear(50, 50)
+        self.fc2_drop = nn.Dropout(0.2)
+        self.fc3 = nn.Linear(50, 10)
 
-#     def forward(self, x):
-#         x = x.view(-1, 32*32)
-#         x = F.relu(self.fc1(x))
-#         x = self.fc1_drop(x)
-#         x = F.relu(self.fc2(x))
-#         x = self.fc2_drop(x)
-#         return F.log_softmax(self.fc3(x), dim=1)
+    def forward(self, x):
+        x = x.view(-1, 32*32)
+        x = F.relu(self.fc1(x))
+        x = self.fc1_drop(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc2_drop(x)
+        return F.log_softmax(self.fc3(x), dim=1)
 
 # model = Net().to(device)
 # optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
