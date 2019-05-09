@@ -56,28 +56,23 @@ for i in range(0, 3):
 training_data.append(train_sampler)
 
 for i, elem in enumerate(training_data):
-    print("traning set ",i + 1 ," size: ", len(elem))
+    print("traning set ", i + 1 ," size: ", len(elem))
 
-# subset_loader = torch.utils.data.Subset(train_dataset, batch_size=32, shuffle=True, sampler=SubsetRandomSampler())
-# print("length of subset loader = ", len(subset_loader))
+train_loader = []
+for elem in training_data:
+   tmp = torch.utils.data.DataLoader(dataset=training_data[0],
+            batch_size = batch_size,
+            shuffle=True)
+   train_loader.append(tmp)
 
-# validation_dataset = datasets.CIFAR10('./data',
-#                                     train=False,
-#                                     transform=transforms.ToTensor())
-
-# train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
-#                                            batch_size=batch_size,
-#                                            shuffle=True)
-
-# validation_loader = torch.utils.data.DataLoader(dataset=validation_dataset,
-#                                                 batch_size=batch_size,
-#                                                 shuffle=False)
-
-
-# for (X_train, y_train) in train_loader:
-#     print('X_train:', X_train.size(), 'type:', X_train.type())
-#     print('y_train:', y_train.size(), 'type:', y_train.type())
-#     break
+print("\n")
+for i, loader in enumerate(train_loader):
+    print("Dataset: ", i + 1)
+    for (X_train, y_train) in loader:
+        print('X_train:', X_train.size(), 'type:', X_train.type())
+        print('y_train:', y_train.size(), 'type:', y_train.type())
+        print("\n")
+        break
 
 # pltsize=1
 # plt.figure(figsize=(10*pltsize, pltsize))
