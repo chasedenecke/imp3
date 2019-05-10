@@ -7,6 +7,7 @@ import seaborn as sns
 import math
 sns.set()
 
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -96,7 +97,8 @@ class Net(nn.Module):
         return F.log_softmax(self.fc3(x), dim=1)
 
 model = Net().to(device)
-optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
+lr = float(sys.argv[1])
+optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.5)
 criterion = nn.CrossEntropyLoss()
 
 print(model)
@@ -153,15 +155,19 @@ lossv, accv = [], []
 for dataset in train_loader:
     for epoch in range(1, epochs + 1):
         train(epoch, dataset)
-    validate(lossv, accv)
-"""
+        validate(lossv, accv)
+
+print("lossv size: ", len(lossv))
+print("accv size: ", len(accv))
+#print("loss: ",lossv[0])
+
 plt.figure(figsize=(5,3))
-plt.plot(np.arange(1,(epochs+1)), lossv)
+plt.plot(np.arange(1,(epochs*4)+1), lossv)
 plt.title('validation loss')
 
 plt.figure(figsize=(5,3))
-plt.plot(np.arange(1,(epochs+1)), accv)
+plt.plot(np.arange(1,(epochs*4)+1), accv)
 plt.title('validation accuracy');
 
 plt.savefig('data.png')
-"""
+
