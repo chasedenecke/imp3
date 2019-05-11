@@ -172,13 +172,17 @@ for i, dataset in enumerate(train_loader):
 #print("accv size: ", len(accv))
 #print("loss: ",lossv[0])
 
-plt.figure(figsize=(5,3))
-plt.plot(np.arange(1,(epochs*4)+1), lossv)
+#plt.figure(figsize=(5,3))
+plt.subplot(2, 1, 1)
+plt.plot(np.arange(1,(epochs*4)+1), lossv, 'b-')
 plt.title('validation loss')
 
-plt.figure(figsize=(5,3))
-plt.plot(np.arange(1,(epochs*4)+1), accv)
+plt.subplot(2, 1, 2)
+#plt.figure(figsize=(5,3))
+plt.plot(np.arange(1,(epochs*4)+1), accv, 'r-')
 plt.title('validation accuracy');
+
+plt.subplots_adjust(hspace=0.5)
 
 losst, acct = [], []
 print("Testing data results")
@@ -186,4 +190,10 @@ validate(losst, acct, test_loader)
 print("Accuracy of test")
 print(acct)
 
-plt.savefig('q2.png')
+try:
+    plt.show()
+except:
+    print("Cannot show graph.")
+
+print("saving graph in p2.png")
+plt.savefig('p2.png')
