@@ -36,6 +36,7 @@ else:
 print('Using PyTorch version:', torch.__version__, ' Device:', device)
 
 batch_size = 32
+# For gray scaling.
 transform = transforms.Compose([
     transforms.Grayscale(),
     transforms.ToTensor()
@@ -46,6 +47,15 @@ train_dataset = datasets.CIFAR10('./data',
                                train=True,
                                download=True,
                                transform=transform)
+
+test_dataset = datasets.CIFAR10('./data',
+                               train=False,
+                               download=True,
+                               transform=transform)
+
+test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
+        batch_size = batch_size,
+        shuffle=True)
 
 print("Generating validation sample")
 validation_sampler, train_sampler = DataSplit(0.8, train_dataset)
@@ -129,10 +139,10 @@ def train(epoch, loader, log_interval=200):
                 epoch, batch_idx * len(data), len(loader.dataset),
                 100. * batch_idx / len(loader), loss.data.item()))
 
-def validate(loss_vector, accuracy_vector):
+def validate(loss_vector, accuracy_vector, loader):
      model.eval()
      val_loss, correct = 0, 0
-     for data, target in validation_loader:
+     for data, target in loader:
          data = data.to(device)
          target = target.to(device)
          output = model(data)
@@ -140,25 +150,26 @@ def validate(loss_vector, accuracy_vector):
          pred = output.data.max(1)[1] # get the index of the max log-probability
          correct += pred.eq(target.data).cpu().sum()
 
-     val_loss /= len(validation_loader)
+     val_loss /= len(loader)
      loss_vector.append(val_loss)
 
-     accuracy = 100. * correct.to(torch.float32) / len(validation_loader.dataset)
+     accuracy = 100. * correct.to(torch.float32) / len(loader.dataset)
      accuracy_vector.append(accuracy)
 
      print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-         val_loss, correct, len(validation_loader.dataset), accuracy))
+         val_loss, correct, len(loader.dataset), accuracy))
 
 epochs = 5
 
 lossv, accv = [], []
-for dataset in train_loader:
+for i, dataset in enumerate(train_loader):
+    print("Using dataset ", i + 1)
     for epoch in range(1, epochs + 1):
         train(epoch, dataset)
-        validate(lossv, accv)
+        validate(lossv, accv, validation_loader)
 
-print("lossv size: ", len(lossv))
-print("accv size: ", len(accv))
+#print("lossv size: ", len(lossv))
+#print("accv size: ", len(accv))
 #print("loss: ",lossv[0])
 
 plt.figure(figsize=(5,3))
@@ -169,5 +180,10 @@ plt.figure(figsize=(5,3))
 plt.plot(np.arange(1,(epochs*4)+1), accv)
 plt.title('validation accuracy');
 
-plt.savefig('data.png')
+losst, acct = [], []
+print("Testing data results")
+validate(losst, acct, test_loader)
+print("Accuracy of test")
+print(acct)
 
+plt.savefig('q2.png')
