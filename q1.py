@@ -113,9 +113,10 @@ criterion = nn.CrossEntropyLoss()
 
 print(model)
 
-def train(epoch, loader, log_interval=200):
+def train(losst, acct, epoch, loader, log_interval=200):
     # Set model to training mode
     model.train()
+    train_loss = 0
     # Loop over each batch from the training set
     for batch_idx, (data, target) in enumerate(loader):
         # Copy data to GPU if needed
@@ -128,7 +129,7 @@ def train(epoch, loader, log_interval=200):
         output = model(data)
         # Calculate loss
         loss = criterion(output, target)
-
+        train_loss += loss.data.item()
         # Backpropagate
         loss.backward()
 
@@ -138,6 +139,9 @@ def train(epoch, loader, log_interval=200):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(loader.dataset),
                 100. * batch_idx / len(loader), loss.data.item()))
+
+    train_loss /= len(loader)
+    losst.append(train_loss)
 
 def validate(loss_vector, accuracy_vector, loader):
      model.eval()
@@ -162,10 +166,11 @@ def validate(loss_vector, accuracy_vector, loader):
 epochs = 5
 
 lossv, accv = [], []
+losst, acct = [], []
 for i, dataset in enumerate(train_loader):
     print("Using dataset ", i + 1)
     for epoch in range(1, epochs + 1):
-        train(epoch, dataset)
+        train(losst, acct, epoch, dataset)
         validate(lossv, accv, validation_loader)
 
 #print("lossv size: ", len(lossv))
@@ -176,12 +181,12 @@ for i, dataset in enumerate(train_loader):
 plt.subplot(2,1,1)
 #plt.figure(figsize=(5,3))
 plt.plot(np.arange(1,(epochs*4)+1), lossv, 'b-')
-plt.title('validation loss')
+plt.title('validation error')
 
 plt.subplot(2,1,2)
 #plt.figure(figsize=(5,3))
-plt.plot(np.arange(1,(epochs*4)+1), accv, 'r-')
-plt.title('validation accuracy');
+plt.plot(np.arange(1,(epochs*4)+1), losst, 'r-')
+plt.title('training loss');
 
 plt.subplots_adjust(hspace=0.5)
 

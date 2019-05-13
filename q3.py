@@ -97,7 +97,7 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         self.fc1 = nn.Linear(32*32, 100)
-        self.fc1_drop = nn.Dropout(0.2)
+        self.fc1_drop = nn.Dropout(.25)
         self.fc3 = nn.Linear(100, 10)
 
     def forward(self, x):
@@ -108,14 +108,15 @@ class Net(nn.Module):
 
 model = Net().to(device)
 lr = float(sys.argv[1])
-optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.5)
+optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.5, weight_decay=0)
 criterion = nn.CrossEntropyLoss()
 
 print(model)
 
-def train(epoch, loader, log_interval=200):
+def train(losst, acct, epoch, loader, log_interval=200):
     # Set model to training mode
     model.train()
+    train_loss = 0
     # Loop over each batch from the training set
     for batch_idx, (data, target) in enumerate(loader):
         # Copy data to GPU if needed
@@ -128,7 +129,7 @@ def train(epoch, loader, log_interval=200):
         output = model(data)
         # Calculate loss
         loss = criterion(output, target)
-
+        train_loss += loss.data.item()
         # Backpropagate
         loss.backward()
 
@@ -138,6 +139,9 @@ def train(epoch, loader, log_interval=200):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(loader.dataset),
                 100. * batch_idx / len(loader), loss.data.item()))
+
+    train_loss /= len(loader)
+    losst.append(train_loss)
 
 def validate(loss_vector, accuracy_vector, loader):
      model.eval()
@@ -162,25 +166,29 @@ def validate(loss_vector, accuracy_vector, loader):
 epochs = 5
 
 lossv, accv = [], []
+losst, acct = [], []
+model.fc1_drop = nn.Dropout(.5)
 for i, dataset in enumerate(train_loader):
     print("Using dataset ", i + 1)
+    print("using dropout", model.fc1_drop)
     for epoch in range(1, epochs + 1):
-        train(epoch, dataset)
+        train(losst, acct, epoch, dataset)
         validate(lossv, accv, validation_loader)
 
 #print("lossv size: ", len(lossv))
 #print("accv size: ", len(accv))
 #print("loss: ",lossv[0])
 
-#plt.figure(figsize=(5,3))
-plt.subplot(2, 1, 1)
-plt.plot(np.arange(1,(epochs*4)+1), lossv, 'b-')
-plt.title('validation loss')
 
-plt.subplot(2, 1, 2)
+plt.subplot(2,1,1)
 #plt.figure(figsize=(5,3))
-plt.plot(np.arange(1,(epochs*4)+1), accv, 'r-')
-plt.title('validation accuracy');
+plt.plot(np.arange(1,(epochs*4)+1), lossv, 'b-')
+plt.title('validation error')
+
+plt.subplot(2,1,2)
+#plt.figure(figsize=(5,3))
+plt.plot(np.arange(1,(epochs*4)+1), losst, 'r-')
+plt.title('training loss')
 
 plt.subplots_adjust(hspace=0.5)
 
@@ -192,8 +200,9 @@ print(acct)
 
 try:
     plt.show()
-except:
-    print("Cannot show graph.")
 
-print("saving graph in p2.png")
-plt.savefig('p3.png')
+except:
+    print("Cannot show graph")
+
+print("saving graph in p1")
+plt.savefig('p1.png')
