@@ -168,8 +168,8 @@ def Generate(lossv, accv, losst, acct, epochs, d=0.2, m = 0.5, wd=0):
     optimizer = torch.optim.SGD(model.parameters(), lr, momentum=m, weight_decay=wd)
     model.fc1_drop = nn.Dropout(d)
 
-    test_loss = 0
-    test_acc = 0
+    test_loss = []
+    test_acc = []
 
     print("Dropout is: ", d)
     print("Momentum is:", m)
@@ -187,22 +187,61 @@ epochs = 5
 
 StateStack = []
 
-dropout_list = [0.5, 0.2, 0.25, 0.1]
-momentum_list = [0.8, 0.5, 0.4, 0.1]
-weight_decay_list = [0.5, 0.2, 0.25, 0.1]
+dropout_list = [.75, 0.5, 0.25, 0.125]
+momentum_list = [1, 0.5, 0.25, 0.1]
+weight_decay_list = [0.6, .3, .2, .1]
 
 lossv, accv = [], []
 losst, acct = [], []
 
-for d in dropout_list)
-    x = Generate(lossv, accv, losst, epochs, d, m, wd)
+for d in dropout_list:
+    x = Generate(lossv, accv, losst, acct, epochs, d)
     StateStack.append(x)
 
 # Temp test plot.
 plt.subplot(3,1,1)
 #plt.figure(figsize=(5,3))
-plt.plot(np.arange(dropout_list StateStack, 'b-')
+plt.plot(dropout_list, StateStack, 'b-')
 plt.title('test accuracy')
+plt.xlabel("dropout")
+
+StateStack.clear() #Empty the list containing accuracy
+lossv.clear()
+accv.clear()
+losst.clear()
+acct.clear()
+
+for m in momentum_list:
+    x = Generate(lossv, accv, losst, acct, epochs, m=m)
+    StateStack.append(x)
+
+# Temp test plot.
+plt.subplot(3,1,2)
+#plt.figure(figsize=(5,3))
+plt.plot(dropout_list, StateStack, 'b-')
+plt.title('test accuracy')
+plt.xlabel("momentum")
+
+StateStack.clear() #Empty the list containing accuracy
+lossv.clear()
+accv.clear()
+losst.clear()
+acct.clear()
+
+for wd in weight_decay_list:
+    x = Generate(lossv, accv, losst, acct, epochs, wd=wd)
+    StateStack.append(x)
+
+# Temp test plot.
+plt.subplot(3,1,3)
+#plt.figure(figsize=(5,3))
+plt.plot(dropout_list, StateStack, 'b-')
+plt.title('test accuracy')
+plt.xlabel("weight decay")
+
+plt.subplots_adjust(hspace=0.5)
+
+
 
 # Graph(lossv, accv, losst, acct, x_axis)
 # Should we make all the graphing below
