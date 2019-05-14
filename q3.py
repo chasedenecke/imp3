@@ -163,23 +163,52 @@ def validate(loss_vector, accuracy_vector, loader):
      print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
          val_loss, correct, len(loader.dataset), accuracy))
 
+
+def Generate(lossv, accv, losst, acct, epochs, d=0.2, m = 0.5, wd=0):
+    optimizer = torch.optim.SGD(model.parameters(), lr, momentum=m, weight_decay=wd)
+    model.fc1_drop = nn.Dropout(d)
+
+    test_loss = 0
+    test_acc = 0
+
+    print("Dropout is: ", d)
+    print("Momentum is:", m)
+    print("Weight Decay:", wd)
+    for i, dataset in enumerate(train_loader):
+        print("Using dataset ", i + 1)
+        for epoch in range(1, epochs + 1):
+            train(losst, acct, epoch, dataset)
+            validate(lossv, accv, validation_loader)
+
+    validate(test_loss, test_acc, test_loader)
+    return test_acc
+
 epochs = 5
+
+StateStack = []
+
+dropout_list = [0.5, 0.2, 0.25, 0.1]
+momentum_list = [0.8, 0.5, 0.4, 0.1]
+weight_decay_list = [0.5, 0.2, 0.25, 0.1]
 
 lossv, accv = [], []
 losst, acct = [], []
-model.fc1_drop = nn.Dropout(.5)
-for i, dataset in enumerate(train_loader):
-    print("Using dataset ", i + 1)
-    print("using dropout", model.fc1_drop)
-    for epoch in range(1, epochs + 1):
-        train(losst, acct, epoch, dataset)
-        validate(lossv, accv, validation_loader)
 
-#print("lossv size: ", len(lossv))
-#print("accv size: ", len(accv))
-#print("loss: ",lossv[0])
+for d in dropout_list)
+    x = Generate(lossv, accv, losst, epochs, d, m, wd)
+    StateStack.append(x)
 
+# Temp test plot.
+plt.subplot(3,1,1)
+#plt.figure(figsize=(5,3))
+plt.plot(np.arange(dropout_list StateStack, 'b-')
+plt.title('test accuracy')
 
+# Graph(lossv, accv, losst, acct, x_axis)
+# Should we make all the graphing below
+# a funciton we can call? Will this be to Messy?
+# Should we go crazy with subplots?
+"""
 plt.subplot(2,1,1)
 #plt.figure(figsize=(5,3))
 plt.plot(np.arange(1,(epochs*4)+1), lossv, 'b-')
@@ -197,7 +226,7 @@ print("Testing data results")
 validate(losst, acct, test_loader)
 print("Accuracy of test")
 print(acct)
-
+"""
 try:
     plt.show()
 
