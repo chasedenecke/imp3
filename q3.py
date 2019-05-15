@@ -107,7 +107,7 @@ class Net(nn.Module):
         return F.log_softmax(self.fc3(x), dim=1)
 
 model = Net().to(device)
-lr = float(sys.argv[1])
+lr = .01
 optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.5, weight_decay=0)
 criterion = nn.CrossEntropyLoss()
 
@@ -134,7 +134,7 @@ def train(losst, acct, epoch, loader, log_interval=200):
         loss.backward()
 
         # Update weights
-        optimizer.step()
+        optimizer.step() 
         if batch_idx % log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(loader.dataset),
@@ -193,6 +193,15 @@ weight_decay_list = [0.6, .3, .2, .1]
 
 lossv, accv = [], []
 losst, acct = [], []
+print("sys.argv[1] = ", sys.argv[1])
+x = Generate(lossv, accv, losst, acct, epochs, float(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3]))
+
+# Temp test plot.
+plt.subplot(3,1,1)
+#plt.figure(figsize=(5,3))
+plt.plot(np.arange(1,(epochs*4)+1), lossv, 'b-')
+plt.ylabel('test accuracy')
+plt.xlabel("epoch")
 
 for d in dropout_list:
     x = Generate(lossv, accv, losst, acct, epochs, d)
@@ -202,7 +211,7 @@ for d in dropout_list:
 plt.subplot(3,1,1)
 #plt.figure(figsize=(5,3))
 plt.plot(dropout_list, StateStack, 'b-')
-plt.title('test accuracy')
+plt.ylabel('test accuracy')
 plt.xlabel("dropout")
 
 StateStack.clear() #Empty the list containing accuracy
@@ -219,7 +228,7 @@ for m in momentum_list:
 plt.subplot(3,1,2)
 #plt.figure(figsize=(5,3))
 plt.plot(dropout_list, StateStack, 'b-')
-plt.title('test accuracy')
+plt.ylabel('test accuracy')
 plt.xlabel("momentum")
 
 StateStack.clear() #Empty the list containing accuracy
@@ -236,36 +245,10 @@ for wd in weight_decay_list:
 plt.subplot(3,1,3)
 #plt.figure(figsize=(5,3))
 plt.plot(dropout_list, StateStack, 'b-')
-plt.title('test accuracy')
+plt.ylabel('test accuracy')
 plt.xlabel("weight decay")
-
 plt.subplots_adjust(hspace=0.5)
 
-
-
-# Graph(lossv, accv, losst, acct, x_axis)
-# Should we make all the graphing below
-# a funciton we can call? Will this be to Messy?
-# Should we go crazy with subplots?
-"""
-plt.subplot(2,1,1)
-#plt.figure(figsize=(5,3))
-plt.plot(np.arange(1,(epochs*4)+1), lossv, 'b-')
-plt.title('validation error')
-
-plt.subplot(2,1,2)
-#plt.figure(figsize=(5,3))
-plt.plot(np.arange(1,(epochs*4)+1), losst, 'r-')
-plt.title('training loss')
-
-plt.subplots_adjust(hspace=0.5)
-
-losst, acct = [], []
-print("Testing data results")
-validate(losst, acct, test_loader)
-print("Accuracy of test")
-print(acct)
-"""
 try:
     plt.show()
 

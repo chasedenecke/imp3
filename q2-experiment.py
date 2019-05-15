@@ -97,7 +97,7 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         self.fc1 = nn.Linear(32*32, 100)
-        self.fc1_drop = nn.Dropout(0.2)
+        self.fc1_drop = nn.Dropout(0)
         self.fc3 = nn.Linear(100, 10)
 
     def forward(self, x):
@@ -108,7 +108,7 @@ class Net(nn.Module):
 
 model = Net().to(device)
 lr = float(sys.argv[1])
-optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.5)
+optimizer = torch.optim.SGD(model.parameters(), lr, momentum=1)
 criterion = nn.CrossEntropyLoss()
 
 print(model)
@@ -173,7 +173,7 @@ for i, dataset in enumerate(train_loader):
         train(losst, acct, epoch, dataset)
         validate(lossv, accv, validation_loader)
 
-#print("lossv size: ", len(lossv))
+#print("lossv size: ", len(lossv))p
 #print("accv size: ", len(accv))
 #print("loss: ",lossv[0])
 
