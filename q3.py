@@ -107,7 +107,7 @@ class Net(nn.Module):
         return F.log_softmax(self.fc3(x), dim=1)
 
 model = Net().to(device)
-lr = float(sys.argv[1])
+lr = .01
 optimizer = torch.optim.SGD(model.parameters(), lr, momentum=0.5, weight_decay=0)
 criterion = nn.CrossEntropyLoss()
 
@@ -134,7 +134,7 @@ def train(losst, acct, epoch, loader, log_interval=200):
         loss.backward()
 
         # Update weights
-        optimizer.step()
+        optimizer.step() 
         if batch_idx % log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(loader.dataset),
@@ -163,40 +163,91 @@ def validate(loss_vector, accuracy_vector, loader):
      print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
          val_loss, correct, len(loader.dataset), accuracy))
 
+
+def Generate(lossv, accv, losst, acct, epochs, d=0.2, m = 0.5, wd=0):
+    optimizer = torch.optim.SGD(model.parameters(), lr, momentum=m, weight_decay=wd)
+    model.fc1_drop = nn.Dropout(d)
+
+    test_loss = []
+    test_acc = []
+
+    print("Dropout is: ", d)
+    print("Momentum is:", m)
+    print("Weight Decay:", wd)
+    for i, dataset in enumerate(train_loader):
+        print("Using dataset ", i + 1)
+        for epoch in range(1, epochs + 1):
+            train(losst, acct, epoch, dataset)
+            validate(lossv, accv, validation_loader)
+
+    validate(test_loss, test_acc, test_loader)
+    return test_acc
+
 epochs = 5
+
+StateStack = []
+
+dropout_list = [.75, 0.5, 0.25, 0.125]
+momentum_list = [1, 0.5, 0.25, 0.1]
+weight_decay_list = [0.6, .3, .2, .1]
 
 lossv, accv = [], []
 losst, acct = [], []
-model.fc1_drop = nn.Dropout(.5)
-for i, dataset in enumerate(train_loader):
-    print("Using dataset ", i + 1)
-    print("using dropout", model.fc1_drop)
-    for epoch in range(1, epochs + 1):
-        train(losst, acct, epoch, dataset)
-        validate(lossv, accv, validation_loader)
+print("sys.argv[1] = ", sys.argv[1])
+x = Generate(lossv, accv, losst, acct, epochs, float(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3]))
 
-#print("lossv size: ", len(lossv))
-#print("accv size: ", len(accv))
-#print("loss: ",lossv[0])
-
-
-plt.subplot(2,1,1)
+# Temp test plot.
+plt.subplot(3,1,1)
 #plt.figure(figsize=(5,3))
 plt.plot(np.arange(1,(epochs*4)+1), lossv, 'b-')
-plt.title('validation error')
+plt.ylabel('test accuracy')
+plt.xlabel("epoch")
 
-plt.subplot(2,1,2)
+for d in dropout_list:
+    x = Generate(lossv, accv, losst, acct, epochs, d)
+    StateStack.append(x)
+
+# Temp test plot.
+plt.subplot(3,1,1)
 #plt.figure(figsize=(5,3))
-plt.plot(np.arange(1,(epochs*4)+1), losst, 'r-')
-plt.title('training loss')
+plt.plot(dropout_list, StateStack, 'b-')
+plt.ylabel('test accuracy')
+plt.xlabel("dropout")
 
+StateStack.clear() #Empty the list containing accuracy
+lossv.clear()
+accv.clear()
+losst.clear()
+acct.clear()
+
+for m in momentum_list:
+    x = Generate(lossv, accv, losst, acct, epochs, m=m)
+    StateStack.append(x)
+
+# Temp test plot.
+plt.subplot(3,1,2)
+#plt.figure(figsize=(5,3))
+plt.plot(dropout_list, StateStack, 'b-')
+plt.ylabel('test accuracy')
+plt.xlabel("momentum")
+
+StateStack.clear() #Empty the list containing accuracy
+lossv.clear()
+accv.clear()
+losst.clear()
+acct.clear()
+
+for wd in weight_decay_list:
+    x = Generate(lossv, accv, losst, acct, epochs, wd=wd)
+    StateStack.append(x)
+
+# Temp test plot.
+plt.subplot(3,1,3)
+#plt.figure(figsize=(5,3))
+plt.plot(dropout_list, StateStack, 'b-')
+plt.ylabel('test accuracy')
+plt.xlabel("weight decay")
 plt.subplots_adjust(hspace=0.5)
-
-losst, acct = [], []
-print("Testing data results")
-validate(losst, acct, test_loader)
-print("Accuracy of test")
-print(acct)
 
 try:
     plt.show()
